@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  #service 1: definition of mysql database
+  mysql-db:
+    image: mysql:latest
+    networks:
+      - spring-boot-mysql-network
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: authdb
+    ports:
+      - "3306:3306"
+    restart: always
+
+  #service 3: definition of spring-boot app 
+  authservice:
+    image: authservice #name of the image after dockerfile executes
+    container_name: authservice #name of the container created from docker image
+    build:
+      context: . #dockerfile path
+      dockerfile: Dockerfile-authapp-springboot #docker file name
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/authdb?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: MYSQL_ROOT_PASSWORD
+    ports:
+      - "8081:8081" #docker containter port with your os port
+    networks:
+      - spring-boot-mysql-network
+    restart: always
+    depends_on:
+      #define dependencies of this app
+      - mysql-db #dependency name (which is defined with this name 'db' in this file earlier)
+networks:
+  spring-boot-mysql-network:
